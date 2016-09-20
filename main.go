@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"io/ioutil"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"bytes"
-	"github.com/golang/go/src/fmt"
 )
 
 func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params)  {
