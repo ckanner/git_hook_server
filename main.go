@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"io/ioutil"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
