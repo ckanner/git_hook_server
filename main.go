@@ -26,15 +26,28 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 	if object_kind == "push" || object_kind == "merge_request" {
 		fmt.Println("send job request")
 		// send job request
-		u, _ := url.Parse("https://ci.office.extantfuture.com/job/dev_java_common/buildWithParameters")
-		query_params := u.Query()
-		query_params.Set("token", "af100519383a99866be4bead138c081c")
-		query_params.Set("ENV_NAME", "dev")
-		u.RawQuery = query_params.Encode()
-		res, _ := http.Get(u.String())
-		result, _ := ioutil.ReadAll(res.Body)
-		res.Body.Close()
-		fmt.Println(result)
+		req, err := http.NewRequest("GET", "https://ci.office.extantfuture.com/job/dev_java_common/buildWithParameters?token=af100519383a99866be4bead138c081c&ENV_NAME=dev", nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+		req.SetBasicAuth("backend", "af100519383a99866be4bead138c081c")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			fmt.Println("err err")
+		}
+		defer resp.Body.Close()
+
+
+		//u, _ := url.Parse("https://backend:af100519383a99866be4bead138c081c@ci.office.extantfuture.com/job/dev_java_common/buildWithParameters")
+		//query_params := u.Query()
+		//query_params.Set("token", "af100519383a99866be4bead138c081c")
+		//query_params.Set("ENV_NAME", "dev")
+		//u.RawQuery = query_params.Encode()
+		//res, _ := http.Get(u.String())
+		//result, _ := ioutil.ReadAll(res.Body)
+		//res.Body.Close()
+		//fmt.Println(result)
 	}
 }
 
