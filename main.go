@@ -28,7 +28,8 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 		// send job request
 		url_params := url.Values{}
 		url_params.Set("ENV_NAME", "dev")
-		req, _ := http.NewRequest("POST", "https://ci.office.extantfuture.com/job/dev_java_common/build", bytes.NewBufferString(url_params.Encode()))
+		url_params.Set("token", "af100519383a99866be4bead138c081c")
+		req, _ := http.NewRequest("POST", "https://backend:af100519383a99866be4bead138c081c@ci.office.extantfuture.com/job/dev_java_common/buildWithParameters", bytes.NewBufferString(url_params.Encode()))
 		req.SetBasicAuth("backend", "backend20166")
 		resp, _ := http.DefaultClient.Do(req)
 		defer resp.Body.Close()
