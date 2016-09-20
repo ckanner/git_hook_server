@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"io/ioutil"
 	"github.com/julienschmidt/httprouter"
 	"strings"
@@ -10,18 +11,26 @@ import (
 )
 
 func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params)  {
-	fmt.Println(r.URL.Path)
-	fmt.Println(ps.ByName("service"))
+	// parse body and params
+	service_name := ps.ByName("service")
 	result, _ := ioutil.ReadAll(r.Body)
 	r.Body.Close()
-
 	var f interface{}
 	json.Unmarshal(result, &f)
-	m := f.(map[string]interface{})
-	fmt.Println(strings.EqualFold(m["ref"].(string), "refs/heads"))
+	data_map := f.(map[string]interface{})
+	// object_kind, ref
+	object_kind := data_map["object_kind"].(string)
+	ref := data_map["ref"].(string)
 
-	fmt.Println(string(result))
-	fmt.Println(r.Header.Get("X-Gitlab-Event"))
+	if object_kind == "push" || object_kind == "merge_request" {
+		// send job request
+		url_params := url.Values{}
+		url_params.Set("ENV_NAME", "dev")
+		req, _ := http.NewRequest("POST", "https://ci.office.extantfuture.com/job/dev_java_common/build", bytes.NewBufferString(url_params.Encode()))
+		req.SetBasicAuth("backend", "backend20166")
+		resp, _ := http.DefaultClient.Do(req)
+		defer resp.Body.Close()
+	}
 }
 
 func main() {
