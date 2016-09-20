@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
-	"bytes"
 )
 
 func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params)  {
@@ -25,14 +24,17 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 	fmt.Println("ref=", ref)
 
 	if object_kind == "push" || object_kind == "merge_request" {
+		fmt.Println("send job request")
 		// send job request
-		url_params := url.Values{}
-		url_params.Set("ENV_NAME", "dev")
-		url_params.Set("token", "af100519383a99866be4bead138c081c")
-		req, _ := http.NewRequest("POST", "https://backend:af100519383a99866be4bead138c081c@ci.office.extantfuture.com/job/dev_java_common/buildWithParameters", bytes.NewBufferString(url_params.Encode()))
-		req.SetBasicAuth("backend", "backend20166")
-		resp, _ := http.DefaultClient.Do(req)
-		defer resp.Body.Close()
+		u, _ := url.Parse("https://ci.office.extantfuture.com/job/dev_java_common/buildWithParameters")
+		query_params := u.Query()
+		query_params.Set("token", "af100519383a99866be4bead138c081c")
+		query_params.Set("ENV_NAME", "dev")
+		u.RawQuery = query_params.Encode()
+		res, _ := http.Get(u.String())
+		result, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		fmt.Println(result)
 	}
 }
 
