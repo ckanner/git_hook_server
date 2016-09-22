@@ -64,16 +64,7 @@ func sendBuildJob(req_url string)  {
 	defer resp.Body.Close()
 }
 
-func hookPackageHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	service_name := ps.ByName("service")
-	env_name, _ := parseRequest(r, service_name)
-	if !strings.EqualFold(env_name, "") {
-		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/build?token=d7961737278945b6d9a506a99c23b67e", env_name, service_name)
-		sendBuildJob(req_url)
-	}
-}
-
-func hookDeployHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  {
+func hookHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  {
 	service_name := ps.ByName("service")
 	env_name, tag_name := parseRequest(r, service_name)
 	if !strings.EqualFold(env_name, "") && !strings.EqualFold(tag_name, "") {
@@ -84,7 +75,6 @@ func hookDeployHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 func main() {
 	router := httprouter.New()
-	router.POST("/hook/:service/package", hookPackageHandler)
-	router.POST("/hook/:service/deploy", hookDeployHandler)
+	router.POST("/hook/:service", hookHandler)
 	http.ListenAndServe(":8900", router)
 }
