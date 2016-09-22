@@ -29,6 +29,7 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 		if strings.EqualFold(ref_branch, "refs/heads/develop") {
 			env_name = "dev"
 		} else if strings.EqualFold(ref_branch, "refs/heads/master") {
+			// TODO add
 			//env_name = "formal"
 		}
 	} else if strings.EqualFold(object_kind, "merge_request") {
@@ -39,9 +40,12 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 			if strings.EqualFold(target_branch, "develop") {
 				env_name = "dev"
 			} else if strings.EqualFold(target_branch, "master") {
-				env_name = "formal"
+				// TODO add
+				//env_name = "formal"
 			}
 		}
+	} else if strings.EqualFold(object_kind, "tag_push") {
+
 	}
 
 	log.Println("hookHandler env_name is " + env_name)
