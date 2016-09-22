@@ -26,17 +26,17 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 	var env_name = ""
 	if strings.EqualFold(object_kind, "push") {
 		ref_branch := data_map["ref"].(string)
-		if strings.EqualFold(ref_branch, "refs/heads/feature/docker") {
+		if strings.EqualFold(ref_branch, "refs/heads/develop") {
 			env_name = "dev"
 		} else if strings.EqualFold(ref_branch, "refs/heads/master") {
-			env_name = "formal"
+			//env_name = "formal"
 		}
 	} else if strings.EqualFold(object_kind, "merge_request") {
 		object_attributes := data_map["object_attributes"].(map[string]interface{})
 		target_branch := object_attributes["target_branch"].(string)
 		merge_status := object_attributes["merge_status"].(string)
 		if strings.EqualFold(merge_status, "merged") {
-			if strings.EqualFold(target_branch, "feature/docker") {
+			if strings.EqualFold(target_branch, "develop") {
 				env_name = "dev"
 			} else if strings.EqualFold(target_branch, "master") {
 				env_name = "formal"
@@ -46,12 +46,12 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 
 	log.Println("hookHandler env_name is " + env_name)
 	if !strings.EqualFold(env_name, "") {
-		req_url := fmt.Sprintf("https://ci.office.extantfuture.com/job/%s_%s/buildWithParameters?token=af100519383a99866be4bead138c081c&ENV_NAME=%s", env_name, service_name, env_name)
+		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&ENV_NAME=%s", env_name, service_name, env_name)
 		req, err := http.NewRequest("GET", req_url, nil)
 		if err != nil {
 			fmt.Println(err)
 		}
-		req.SetBasicAuth("backend", "af100519383a99866be4bead138c081c")
+		req.SetBasicAuth("backend", "d7961737278945b6d9a506a99c23b67e")
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
