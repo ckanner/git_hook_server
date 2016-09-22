@@ -10,10 +10,7 @@ import (
 	"log"
 )
 
-func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params)  {
-	// parse body and params
-	service_name := ps.ByName("service")
-	log.Println("hookHandler service_name is " + service_name)
+func parseRequest(r *http.Request, service_name string) (env_name, tag_name string) {
 	result, _ := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	var f interface{}
@@ -21,16 +18,16 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 	data_map := f.(map[string]interface{})
 	// object_kind, ref
 	object_kind := data_map["object_kind"].(string)
-	log.Println("hookHandler object_kind is " + object_kind)
-
-	var env_name = ""
+	log.Println("parseRequest object_kind is " + object_kind)
 	if strings.EqualFold(object_kind, "push") {
-		ref_branch := data_map["ref"].(string)
-		if strings.EqualFold(ref_branch, "refs/heads/develop") {
+		branch_name := strings.Replace(data_map["ref"].(string), "refs/heads/", "", 1)
+		if strings.EqualFold(branch_name, "develop") {
 			env_name = "dev"
-		} else if strings.EqualFold(ref_branch, "refs/heads/master") {
+			tag_name = "develop"
+		} else if strings.EqualFold(branch_name, "master") {
 			// TODO add
 			//env_name = "formal"
+			//tag_name = "master
 		}
 	} else if strings.EqualFold(object_kind, "merge_request") {
 		object_attributes := data_map["object_attributes"].(map[string]interface{})
@@ -39,34 +36,55 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 		if strings.EqualFold(merge_status, "merged") {
 			if strings.EqualFold(target_branch, "develop") {
 				env_name = "dev"
+				tag_name = "develop"
 			} else if strings.EqualFold(target_branch, "master") {
 				// TODO add
 				//env_name = "formal"
+				//tag_name = "master
 			}
 		}
 	} else if strings.EqualFold(object_kind, "tag_push") {
-
+		env_name = "dev"
+		tag_name = strings.Replace(data_map["ref"].(string), "refs/tags/", "", 1)
 	}
+	return env_name, tag_name
+}
 
-	log.Println("hookHandler env_name is " + env_name)
+func sendBuildJob(req_url string)  {
+	req, err := http.NewRequest("GET", req_url, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.SetBasicAuth("backend", "d7961737278945b6d9a506a99c23b67e")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println("err err")
+	}
+	defer resp.Body.Close()
+}
+
+func hookPackageHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	service_name := ps.ByName("service")
+	env_name, _ := parseRequest(r, service_name)
 	if !strings.EqualFold(env_name, "") {
 		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/build?token=d7961737278945b6d9a506a99c23b67e", env_name, service_name)
-		req, err := http.NewRequest("GET", req_url, nil)
-		if err != nil {
-			fmt.Println(err)
-		}
-		req.SetBasicAuth("backend", "d7961737278945b6d9a506a99c23b67e")
+		sendBuildJob(req_url)
+	}
+}
 
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			fmt.Println("err err")
-		}
-		defer resp.Body.Close()
+func hookDeployHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  {
+	service_name := ps.ByName("service")
+	env_name, tag_name := parseRequest(r, service_name)
+	if !strings.EqualFold(env_name, "") && !strings.EqualFold(tag_name, "") {
+		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&TAG_NAME=%s", env_name, service_name, tag_name)
+		sendBuildJob(req_url)
 	}
 }
 
 func main() {
 	router := httprouter.New()
-	router.POST("/hook/:service", hookHandler)
+	router.POST("/hook/:service/package", hookPackageHandler)
+	router.POST("/hook/:service/deploy", hookDeployHandler)
 	http.ListenAndServe(":8900", router)
 }
