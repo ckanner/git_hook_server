@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-func parseRequest(r *http.Request, service_name string) (env_name, tag_name string) {
+func parseRequest(r *http.Request, service_name string) (env_name, branch_name string) {
 	result, _ := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	var f interface{}
@@ -20,14 +20,14 @@ func parseRequest(r *http.Request, service_name string) (env_name, tag_name stri
 	object_kind := data_map["object_kind"].(string)
 	log.Println("parseRequest object_kind is " + object_kind)
 	if strings.EqualFold(object_kind, "push") {
-		branch_name := strings.Replace(data_map["ref"].(string), "refs/heads/", "", 1)
-		if strings.EqualFold(branch_name, "develop") {
+		ref_branch := strings.Replace(data_map["ref"].(string), "refs/heads/", "", 1)
+		if strings.EqualFold(ref_branch, "develop") {
 			env_name = "dev"
-			tag_name = "develop"
-		} else if strings.EqualFold(branch_name, "master") {
+			branch_name = "develop"
+		} else if strings.EqualFold(ref_branch, "master") {
 			// TODO add
 			//env_name = "formal"
-			//tag_name = "master
+			//branch_name = "master
 		}
 	} else if strings.EqualFold(object_kind, "merge_request") {
 		object_attributes := data_map["object_attributes"].(map[string]interface{})
@@ -36,18 +36,18 @@ func parseRequest(r *http.Request, service_name string) (env_name, tag_name stri
 		if strings.EqualFold(merge_status, "merged") {
 			if strings.EqualFold(target_branch, "develop") {
 				env_name = "dev"
-				tag_name = "develop"
+				branch_name = "develop"
 			} else if strings.EqualFold(target_branch, "master") {
 				// TODO add
 				//env_name = "formal"
-				//tag_name = "master
+				//branch_name = "master
 			}
 		}
 	} else if strings.EqualFold(object_kind, "tag_push") {
 		env_name = "dev"
-		tag_name = strings.Replace(data_map["ref"].(string), "refs/tags/", "", 1)
+		branch_name = strings.Replace(data_map["ref"].(string), "refs/tags/", "", 1)
 	}
-	return env_name, tag_name
+	return env_name, branch_name
 }
 
 func sendBuildJob(req_url string)  {
@@ -66,9 +66,9 @@ func sendBuildJob(req_url string)  {
 
 func hookHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  {
 	service_name := ps.ByName("service")
-	env_name, tag_name := parseRequest(r, service_name)
-	if !strings.EqualFold(env_name, "") && !strings.EqualFold(tag_name, "") {
-		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&TAG_NAME=%s", env_name, service_name, tag_name)
+	env_name, branch_name := parseRequest(r, service_name)
+	if !strings.EqualFold(env_name, "") && !strings.EqualFold(branch_name, "") {
+		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&BRANCH=%s", env_name, service_name, branch_name)
 		sendBuildJob(req_url)
 	}
 }
