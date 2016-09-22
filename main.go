@@ -50,7 +50,7 @@ func hookHandler(w http.ResponseWriter, r * http.Request, ps httprouter.Params) 
 
 	log.Println("hookHandler env_name is " + env_name)
 	if !strings.EqualFold(env_name, "") {
-		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&ENV_NAME=%s", env_name, service_name, env_name)
+		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/build?token=d7961737278945b6d9a506a99c23b67e", env_name, service_name)
 		req, err := http.NewRequest("GET", req_url, nil)
 		if err != nil {
 			fmt.Println(err)
