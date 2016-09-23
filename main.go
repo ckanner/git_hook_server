@@ -46,7 +46,7 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 		env_name = "dev"
 		branch_name = strings.Replace(data_map["ref"].(string), "refs/tags/", "", 1)
 	}
-	log.Println("parseRequest object_kind is " + object_kind + ", env_name is " + env_name + ", branch_name is" + branch_name)
+	log.Println("service_name=" + service_name + ", object_kind=" + object_kind + ", env_name=" + env_name + ", branch_name=" + branch_name)
 	return env_name, branch_name
 }
 
