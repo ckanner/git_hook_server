@@ -18,7 +18,6 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 	data_map := f.(map[string]interface{})
 	// object_kind, ref
 	object_kind := data_map["object_kind"].(string)
-	log.Println("parseRequest object_kind is " + object_kind)
 	if strings.EqualFold(object_kind, "push") {
 		ref_branch := strings.Replace(data_map["ref"].(string), "refs/heads/", "", 1)
 		if strings.EqualFold(ref_branch, "develop") {
@@ -47,6 +46,7 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 		env_name = "dev"
 		branch_name = strings.Replace(data_map["ref"].(string), "refs/tags/", "", 1)
 	}
+	log.Println("parseRequest object_kind is " + object_kind + ", env_name is " + env_name + ", branch_name is" + branch_name)
 	return env_name, branch_name
 }
 
