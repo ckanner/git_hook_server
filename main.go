@@ -25,7 +25,7 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 			branch_name = "develop"
 		} else if strings.EqualFold(ref_branch, "master") {
 			env_name = "formal"
-			branch_name = "master
+			branch_name = "master"
 		}
 	} else if strings.EqualFold(object_kind, "merge_request") {
 		object_attributes := data_map["object_attributes"].(map[string]interface{})
@@ -37,7 +37,7 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 				branch_name = "develop"
 			} else if strings.EqualFold(target_branch, "master") {
 				env_name = "formal"
-				branch_name = "master
+				branch_name = "master"
 			}
 		}
 	} else if strings.EqualFold(object_kind, "tag_push") {
