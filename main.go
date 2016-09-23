@@ -68,7 +68,7 @@ func hookHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  
 	service_name := ps.ByName("service")
 	env_name, branch_name := parseRequest(r, service_name)
 	if !strings.EqualFold(env_name, "") && !strings.EqualFold(branch_name, "") {
-		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&BRANCH=%s", env_name, service_name, branch_name)
+		req_url := fmt.Sprintf("http://publish.extantfuture.com/job/%s_%s/buildWithParameters?token=d7961737278945b6d9a506a99c23b67e&BRANCH=%s&TRIGGER=auto", env_name, service_name, branch_name)
 		sendBuildJob(req_url)
 	}
 }
