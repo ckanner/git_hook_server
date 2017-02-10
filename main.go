@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"net/http"
-	"io/ioutil"
-	"github.com/julienschmidt/httprouter"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func parseRequest(r *http.Request, service_name string) (env_name, branch_name string) {
@@ -23,10 +24,11 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 		if strings.EqualFold(ref_branch, "develop") {
 			env_name = "dev"
 			branch_name = "develop"
-		} else if strings.EqualFold(ref_branch, "master") {
-			env_name = "dev"
-			branch_name = "master"
 		}
+		// } else if strings.EqualFold(ref_branch, "master") {
+		// 	env_name = "dev"
+		// 	branch_name = "master"
+		// }
 	} else if strings.EqualFold(object_kind, "merge_request") {
 		object_attributes := data_map["object_attributes"].(map[string]interface{})
 		target_branch := object_attributes["target_branch"].(string)
@@ -48,7 +50,7 @@ func parseRequest(r *http.Request, service_name string) (env_name, branch_name s
 	return env_name, branch_name
 }
 
-func sendBuildJob(req_url string)  {
+func sendBuildJob(req_url string) {
 	req, err := http.NewRequest("GET", req_url, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -62,7 +64,7 @@ func sendBuildJob(req_url string)  {
 	defer resp.Body.Close()
 }
 
-func hookHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)  {
+func hookHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	service_name := ps.ByName("service")
 	env_name, branch_name := parseRequest(r, service_name)
 	if !strings.EqualFold(env_name, "") && !strings.EqualFold(branch_name, "") {
